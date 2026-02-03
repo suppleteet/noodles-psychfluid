@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Psychedelic Fluid Simulation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #gui {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            bottom: 20px;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 13px;
+            color: #fff;
+            min-width: 240px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        #gui.visible {
+            display: block;
+        }
+
+        #gui h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        #gui h4 {
+            margin: 16px 0 8px 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #gui h4:first-of-type {
+            margin-top: 0;
+        }
+
+        .control {
+            margin-bottom: 12px;
+        }
+
+        .control:last-child {
+            margin-bottom: 0;
+        }
+
+        .control label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .control label span {
+            color: #8af;
+            font-family: monospace;
+        }
+
+        .control input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #8af;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .control input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: #8af;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .control.checkbox label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .control.checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .control select {
+            width: 100%;
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        .control select option {
+            background: #222;
+            color: #fff;
+        }
+
+        #showSettings {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: background 0.2s;
+        }
+
+        #showSettings:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        #showSettings.hidden {
+            display: none;
+        }
+
+        #gui .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #gui .header h3 {
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+
+        #closeSettings {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+        }
+
+        #closeSettings:hover {
+            color: rgba(255, 255, 255, 1);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div id="gui">
+        <div class="header">
+            <h3>Fluid Settings</h3>
+            <button id="closeSettings">&times;</button>
+        </div>
+
+        <h4>Simulation</h4>
+        <div class="control">
+            <label>Velocity Dissipation <span id="velocityDissipationVal">1</span></label>
+            <input type="range" id="velocityDissipation" min="0.9" max="1" step="0.001" value="1">
+        </div>
+        <div class="control">
+            <label>Density Dissipation <span id="densityDissipationVal">0.994</span></label>
+            <input type="range" id="densityDissipation" min="0.9" max="1" step="0.001" value="0.994">
+        </div>
+        <div class="control">
+            <label>Pressure Iterations <span id="pressureIterationsVal">50</span></label>
+            <input type="range" id="pressureIterations" min="1" max="100" step="1" value="50">
+        </div>
+
+        <h4>Touch Input</h4>
+        <div class="control">
+            <label>Radius <span id="touchSplatRadiusVal">0.25</span></label>
+            <input type="range" id="touchSplatRadius" min="0.05" max="2" step="0.05" value="0.25">
+        </div>
+        <div class="control">
+            <label>Force <span id="splatForceVal">1000</span></label>
+            <input type="range" id="splatForce" min="100" max="15000" step="100" value="1000">
+        </div>
+        <div class="control">
+            <label>Push <span id="touchSplatPushVal">300</span></label>
+            <input type="range" id="touchSplatPush" min="0" max="1000" step="10" value="300">
+        </div>
+        <div class="control">
+            <label>Brightness <span id="touchSplatBrightnessVal">0.4</span></label>
+            <input type="range" id="touchSplatBrightness" min="0.1" max="1" step="0.05" value="0.4">
+        </div>
+
+        <h4>Auto Splats</h4>
+        <div class="control">
+            <label>Rate <span id="autoSplatRateVal">20</span></label>
+            <input type="range" id="autoSplatRate" min="0" max="40" step="0.5" value="20">
+        </div>
+        <div class="control">
+            <label>Radius <span id="autoSplatRadiusVal">0.6</span></label>
+            <input type="range" id="autoSplatRadius" min="0.1" max="3" step="0.05" value="0.6">
+        </div>
+        <div class="control">
+            <label>Velocity <span id="autoSplatVelocityVal">150</span></label>
+            <input type="range" id="autoSplatVelocity" min="0" max="500" step="10" value="150">
+        </div>
+        <div class="control">
+            <label>Fade Duration <span id="autoSplatFadeDurationVal">3.2</span></label>
+            <input type="range" id="autoSplatFadeDuration" min="0.1" max="10" step="0.1" value="3.2">
+        </div>
+        <div class="control">
+            <label>Push <span id="autoSplatPushVal">500</span></label>
+            <input type="range" id="autoSplatPush" min="0" max="1000" step="10" value="500">
+        </div>
+
+        <h4>Colors</h4>
+        <div class="control">
+            <label>Palette</label>
+            <select id="palette">
+                <option value="rainbow">Rainbow</option>
+                <option value="synthwave">Synthwave Sunset</option>
+                <option value="retroSwirl">Retro Swirl</option>
+                <option value="dripWave">Drip Wave</option>
+                <option value="freshPop">Fresh Pop</option>
+                <option value="seventiesGroove">70s Groove</option>
+                <option value="purpleHaze">Purple Haze</option>
+                <option value="popArt">Pop Art</option>
+            </select>
+        </div>
+
+        <h4>Display</h4>
+        <div class="control">
+            <label>Brightness <span id="brightnessVal">0.9</span></label>
+            <input type="range" id="brightness" min="0.5" max="2" step="0.1" value="0.9">
+        </div>
+        <div class="control checkbox">
+            <label>
+                <input type="checkbox" id="normalizeHDR" checked>
+                Normalize HDR
+            </label>
+        </div>
+        <div class="control checkbox">
+            <label>
+                <input type="checkbox" id="posterize">
+                Posterize
+            </label>
+        </div>
+        <div class="control">
+            <label>Outline Thickness <span id="outlineThicknessVal">2</span></label>
+            <input type="range" id="outlineThickness" min="0" max="10" step="0.5" value="2">
+        </div>
+
+    </div>
+
+    <button id="showSettings">Settings</button>
+
+    <script src="shaders.js"></script>
+    <script src="fluid.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
