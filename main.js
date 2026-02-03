@@ -333,8 +333,11 @@ class App {
             checkbox.addEventListener('change', () => {
                 this.fluid.config[name] = checkbox.checked;
                 this.saveSettings();
+                if (name === 'posterize') this.updateOutlineVisibility();
             });
         }
+
+        this.updateOutlineVisibility();
 
         // Palette dropdown (special handling for app state)
         const paletteSelect = document.getElementById('palette');
@@ -408,6 +411,11 @@ class App {
         } catch (e) {
             console.warn('Failed to save settings:', e);
         }
+    }
+
+    updateOutlineVisibility() {
+        document.getElementById('outlineControl').style.display =
+            this.fluid.config.posterize ? '' : 'none';
     }
 
     updatePaletteColors() {

@@ -52,7 +52,7 @@ class FluidSimulation {
             // Display
             brightness: 0.9,
             normalizeHDR: true,
-            posterize: false,
+            posterize: true,
             outlineThickness: 2.0,
             paletteColors: []
         };

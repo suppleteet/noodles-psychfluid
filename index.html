@@ -214,6 +214,43 @@
             <button id="closeSettings">&times;</button>
         </div>
 
+        <h4>Colors</h4>
+        <div class="control">
+            <label>Palette</label>
+            <select id="palette">
+                <option value="rainbow">Rainbow</option>
+                <option value="synthwave">Synthwave Sunset</option>
+                <option value="retroSwirl">Retro Swirl</option>
+                <option value="dripWave">Drip Wave</option>
+                <option value="freshPop">Fresh Pop</option>
+                <option value="seventiesGroove">70s Groove</option>
+                <option value="purpleHaze">Purple Haze</option>
+                <option value="popArt">Pop Art</option>
+            </select>
+        </div>
+
+        <h4>Display</h4>
+        <div class="control">
+            <label>Brightness <span id="brightnessVal">0.9</span></label>
+            <input type="range" id="brightness" min="0.5" max="2" step="0.1" value="0.9">
+        </div>
+        <div class="control checkbox">
+            <label>
+                <input type="checkbox" id="normalizeHDR" checked>
+                Normalize HDR
+            </label>
+        </div>
+        <div class="control checkbox">
+            <label>
+                <input type="checkbox" id="posterize" checked>
+                Posterize
+            </label>
+        </div>
+        <div class="control" id="outlineControl">
+            <label>Outline Thickness <span id="outlineThicknessVal">2</span></label>
+            <input type="range" id="outlineThickness" min="0" max="10" step="0.5" value="2">
+        </div>
+
         <h4>Simulation</h4>
         <div class="control">
             <label>Velocity Dissipation <span id="velocityDissipationVal">1</span></label>
@@ -266,43 +303,6 @@
         <div class="control">
             <label>Push <span id="autoSplatPushVal">500</span></label>
             <input type="range" id="autoSplatPush" min="0" max="1000" step="10" value="500">
-        </div>
-
-        <h4>Colors</h4>
-        <div class="control">
-            <label>Palette</label>
-            <select id="palette">
-                <option value="rainbow">Rainbow</option>
-                <option value="synthwave">Synthwave Sunset</option>
-                <option value="retroSwirl">Retro Swirl</option>
-                <option value="dripWave">Drip Wave</option>
-                <option value="freshPop">Fresh Pop</option>
-                <option value="seventiesGroove">70s Groove</option>
-                <option value="purpleHaze">Purple Haze</option>
-                <option value="popArt">Pop Art</option>
-            </select>
-        </div>
-
-        <h4>Display</h4>
-        <div class="control">
-            <label>Brightness <span id="brightnessVal">0.9</span></label>
-            <input type="range" id="brightness" min="0.5" max="2" step="0.1" value="0.9">
-        </div>
-        <div class="control checkbox">
-            <label>
-                <input type="checkbox" id="normalizeHDR" checked>
-                Normalize HDR
-            </label>
-        </div>
-        <div class="control checkbox">
-            <label>
-                <input type="checkbox" id="posterize">
-                Posterize
-            </label>
-        </div>
-        <div class="control">
-            <label>Outline Thickness <span id="outlineThicknessVal">2</span></label>
-            <input type="range" id="outlineThickness" min="0" max="10" step="0.5" value="2">
         </div>
 
     </div>
