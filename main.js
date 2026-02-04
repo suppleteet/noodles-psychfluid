@@ -121,6 +121,8 @@ class App {
         this.canvas = document.getElementById('canvas');
         this.currentPalette = 'rainbow';
         this.paletteIndex = 0;
+        this.isMobile = navigator.maxTouchPoints > 0
+            && Math.min(screen.width, screen.height) <= 500;
         this.resizeCanvas();
 
         try {
@@ -130,8 +132,6 @@ class App {
             document.body.innerHTML = '<div style="color:white;padding:20px;font-family:sans-serif;">WebGL2 with float textures required. Please use a modern browser.</div>';
             return;
         }
-
-        this.isMobile = this.fluid.isMobile;
         this.pointers = new Map();
         this.hueOffset = 0;
         this.lastTime = performance.now();
@@ -144,8 +144,9 @@ class App {
     }
 
     resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        const scale = this.isMobile ? 0.65 : 1;
+        this.canvas.width = Math.round(window.innerWidth * scale);
+        this.canvas.height = Math.round(window.innerHeight * scale);
     }
 
     setupEvents() {
@@ -316,6 +317,12 @@ class App {
     setupGUI() {
         // Load saved settings first
         this.loadSettings();
+
+        // Mobile overrides applied after settings load
+        if (this.isMobile) {
+            this.fluid.config.outlineThickness = 0;
+            this.fluid.config.autoSplatRate = Math.min(this.fluid.config.autoSplatRate, 10);
+        }
 
         // Setup slider controls
         for (const name of SETTINGS_CONFIG.sliders) {
@@ -572,8 +579,16 @@ class App {
     }
 
     animate() {
+        requestAnimationFrame(() => this.animate());
+
         const now = performance.now();
-        const dt = Math.min((now - this.lastTime) / 1000, 0.016);
+        const elapsed = now - this.lastTime;
+
+        // Cap to ~30fps on mobile
+        if (this.isMobile && elapsed < 32) return;
+
+        const maxDt = this.isMobile ? 0.033 : 0.016;
+        const dt = Math.min(elapsed / 1000, maxDt);
         this.lastTime = now;
 
         // Cycle rainbow hue over time
@@ -603,8 +618,6 @@ class App {
 
         // Render to screen
         this.fluid.render();
-
-        requestAnimationFrame(() => this.animate());
     }
 }
 
