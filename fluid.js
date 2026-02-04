@@ -32,7 +32,7 @@ class FluidSimulation {
             // Simulation
             simResolution: 64,
             dyeResolution: 256,
-            pressureIterations: this.isMobile ? 10 : 50,
+            pressureIterations: this.isMobile ? 25 : 50,
             velocityDissipation: 1,
             densityDissipation: 0.994,
 
@@ -395,14 +395,13 @@ class FluidSimulation {
         this.blit(null);
     }
 
-    // Handle canvas resize
+    // Handle canvas resize - reinit framebuffers if resolution changed
     resize() {
-        const width = this.canvas.clientWidth;
-        const height = this.canvas.clientHeight;
+        const simRes = this.getResolution(this.config.simResolution);
+        const dyeRes = this.getResolution(this.config.dyeResolution);
 
-        if (this.canvas.width !== width || this.canvas.height !== height) {
-            this.canvas.width = width;
-            this.canvas.height = height;
+        if (simRes.width !== this.simWidth || simRes.height !== this.simHeight ||
+            dyeRes.width !== this.dyeWidth || dyeRes.height !== this.dyeHeight) {
             this.initFramebuffers();
         }
     }

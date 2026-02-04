@@ -319,7 +319,7 @@ class App {
             Object.assign(this.fluid.config, {
                 brightness: 1,
                 posterize: false,
-                pressureIterations: 10,
+                pressureIterations: 25,
                 touchSplatRadius: 0.2,
                 splatForce: 2100,
                 touchSplatPush: 120,
