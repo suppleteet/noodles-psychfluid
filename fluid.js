@@ -24,11 +24,15 @@ class FluidSimulation {
         }
 
         // Simulation parameters
+        // Detect phones - touch device with small screen
+        this.isMobile = navigator.maxTouchPoints > 0
+            && Math.min(screen.width, screen.height) <= 500;
+
         this.config = {
             // Simulation
             simResolution: 64,
-            dyeResolution: 256,
-            pressureIterations: 50,
+            dyeResolution: this.isMobile ? 128 : 256,
+            pressureIterations: this.isMobile ? 20 : 50,
             velocityDissipation: 1,
             densityDissipation: 0.994,
 

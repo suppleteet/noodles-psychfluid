@@ -131,6 +131,7 @@ class App {
             return;
         }
 
+        this.isMobile = this.fluid.isMobile;
         this.pointers = new Map();
         this.hueOffset = 0;
         this.lastTime = performance.now();
@@ -185,7 +186,8 @@ class App {
 
     warmUp() {
         // Pre-populate with splats and run simulation to blend them
-        for (let i = 0; i < 30; i++) {
+        const warmUpSplats = this.isMobile ? 15 : 30;
+        for (let i = 0; i < warmUpSplats; i++) {
             const x = Math.random();
             const y = Math.random();
             const angle = Math.random() * Math.PI * 2;
@@ -196,7 +198,8 @@ class App {
             this.fluid.splat(x, y, dx, dy, color);
         }
         // Run simulation steps to blend everything together
-        for (let i = 0; i < 60; i++) {
+        const warmUpSteps = this.isMobile ? 30 : 60;
+        for (let i = 0; i < warmUpSteps; i++) {
             this.fluid.step(0.016);
         }
     }
@@ -239,7 +242,7 @@ class App {
                 const deltaEase = ease - prevEase;
 
                 // Apply burst in all directions
-                const numBursts = 12;
+                const numBursts = this.isMobile ? 6 : 12;
                 for (let j = 0; j < numBursts; j++) {
                     const angle = (j / numBursts) * Math.PI * 2;
                     const dx = Math.cos(angle) * splat.burstForce * deltaEase;
@@ -253,7 +256,7 @@ class App {
 
                 // Also apply push
                 const pushVel = splat.burstForce * 0.5 * deltaEase;
-                const numPushes = 8;
+                const numPushes = this.isMobile ? 4 : 8;
                 for (let j = 0; j < numPushes; j++) {
                     const angle = (j / numPushes) * Math.PI * 2;
                     const offset = 0.02;
@@ -290,7 +293,7 @@ class App {
                 // Push outward in multiple directions
                 if (pushStrength > 0) {
                     const pushVel = pushStrength * deltaProgress * pushEase;
-                    const numPushes = 8;
+                    const numPushes = this.isMobile ? 4 : 8;
                     for (let j = 0; j < numPushes; j++) {
                         const angle = (j / numPushes) * Math.PI * 2;
                         const offset = 0.03;
@@ -501,7 +504,7 @@ class App {
 
         // Interpolate between previous and current position for smoother lines
         const dist = Math.sqrt((targetX - pointer.prevX) ** 2 + (targetY - pointer.prevY) ** 2);
-        const steps = Math.max(1, Math.floor(dist * 50));
+        const steps = Math.max(1, Math.floor(dist * (this.isMobile ? 20 : 50)));
 
         for (let i = 1; i <= steps; i++) {
             const t = i / steps;
@@ -530,7 +533,7 @@ class App {
         const pushStrength = this.fluid.config.touchSplatPush * strength;
         if (pushStrength <= 0) return;
 
-        const numPushes = 8;
+        const numPushes = this.isMobile ? 4 : 8;
         for (let j = 0; j < numPushes; j++) {
             const angle = (j / numPushes) * Math.PI * 2;
             const offset = 0.02;
