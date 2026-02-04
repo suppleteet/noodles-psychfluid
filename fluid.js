@@ -32,7 +32,7 @@ class FluidSimulation {
             // Simulation
             simResolution: 64,
             dyeResolution: this.isMobile ? 128 : 256,
-            pressureIterations: this.isMobile ? 20 : 50,
+            pressureIterations: this.isMobile ? 10 : 50,
             velocityDissipation: 1,
             densityDissipation: 0.994,
 

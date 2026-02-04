@@ -144,9 +144,8 @@ class App {
     }
 
     resizeCanvas() {
-        const scale = this.isMobile ? 0.65 : 1;
-        this.canvas.width = Math.round(window.innerWidth * scale);
-        this.canvas.height = Math.round(window.innerHeight * scale);
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
     }
 
     setupEvents() {
@@ -315,14 +314,34 @@ class App {
     }
 
     setupGUI() {
-        // Load saved settings first
-        this.loadSettings();
-
-        // Mobile overrides applied after settings load
+        // Apply mobile defaults before loading saved settings
         if (this.isMobile) {
-            this.fluid.config.outlineThickness = 0;
-            this.fluid.config.autoSplatRate = Math.min(this.fluid.config.autoSplatRate, 10);
+            Object.assign(this.fluid.config, {
+                brightness: 1,
+                posterize: false,
+                pressureIterations: 10,
+                touchSplatRadius: 0.2,
+                splatForce: 2100,
+                touchSplatPush: 120,
+                autoSplatRadius: 0.35,
+                autoSplatFadeDuration: 1.9,
+                autoSplatPush: 250,
+                outlineThickness: 0
+            });
+            // Sync UI to mobile defaults
+            for (const name of SETTINGS_CONFIG.sliders) {
+                const input = document.getElementById(name);
+                const val = document.getElementById(name + 'Val');
+                input.value = this.fluid.config[name];
+                val.textContent = this.fluid.config[name];
+            }
+            for (const name of SETTINGS_CONFIG.checkboxes) {
+                document.getElementById(name).checked = this.fluid.config[name];
+            }
         }
+
+        // Load saved settings (overrides mobile defaults if they exist)
+        this.loadSettings();
 
         // Setup slider controls
         for (const name of SETTINGS_CONFIG.sliders) {
