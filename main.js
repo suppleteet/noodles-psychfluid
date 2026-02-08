@@ -185,9 +185,11 @@ class App {
     }
 
     warmUp() {
+        // Skip warmup on mobile - let auto-splats fill the canvas naturally
+        if (this.isMobile) return;
+
         // Pre-populate with splats and run simulation to blend them
-        const warmUpSplats = this.isMobile ? 15 : 30;
-        for (let i = 0; i < warmUpSplats; i++) {
+        for (let i = 0; i < 30; i++) {
             const x = Math.random();
             const y = Math.random();
             const angle = Math.random() * Math.PI * 2;
@@ -198,8 +200,7 @@ class App {
             this.fluid.splat(x, y, dx, dy, color);
         }
         // Run simulation steps to blend everything together
-        const warmUpSteps = this.isMobile ? 30 : 60;
-        for (let i = 0; i < warmUpSteps; i++) {
+        for (let i = 0; i < 60; i++) {
             this.fluid.step(0.016);
         }
     }
