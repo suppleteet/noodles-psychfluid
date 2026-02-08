@@ -395,6 +395,19 @@ class FluidSimulation {
         this.blit(null);
     }
 
+    // Sample color from dye texture at normalized coordinates (0-1)
+    sampleColor(x, y) {
+        const gl = this.gl;
+        const px = Math.floor(x * this.dyeWidth);
+        const py = Math.floor(y * this.dyeHeight);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.dye.read.fbo);
+        const pixels = new Float32Array(4);
+        gl.readPixels(px, py, 1, 1, gl.RGBA, gl.FLOAT, pixels);
+
+        return { r: pixels[0], g: pixels[1], b: pixels[2] };
+    }
+
     // Handle canvas resize - reinit framebuffers if resolution changed
     resize() {
         const simRes = this.getResolution(this.config.simResolution);

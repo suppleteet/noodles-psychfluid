@@ -327,7 +327,8 @@ class App {
                 autoSplatRadius: 0.35,
                 autoSplatFadeDuration: 1.9,
                 autoSplatPush: 250,
-                outlineThickness: 0
+                outlineThickness: 0,
+                autoSplatRate: 0
             });
             // Sync UI to mobile defaults
             for (const name of SETTINGS_CONFIG.sliders) {
@@ -491,20 +492,35 @@ class App {
     }
 
     onPointerDown(e) {
+        const x = e.clientX / this.canvas.width;
+        const y = 1 - e.clientY / this.canvas.height;
+
+        // On mobile, sample existing color for fingerpainting effect
+        let color;
+        if (this.isMobile) {
+            color = this.fluid.sampleColor(x, y);
+            // Boost dim colors so they're visible
+            const maxC = Math.max(color.r, color.g, color.b, 0.1);
+            if (maxC < 0.3) {
+                const boost = 0.3 / maxC;
+                color = { r: color.r * boost, g: color.g * boost, b: color.b * boost };
+            }
+        } else {
+            const paletteColor = this.getColorForPointer(this.hueOffset + this.pointers.size * 60);
+            const brightness = this.fluid.config.touchSplatBrightness;
+            color = { r: paletteColor.r * brightness, g: paletteColor.g * brightness, b: paletteColor.b * brightness };
+        }
+
         const pointer = {
             id: e.pointerId,
-            x: e.clientX / this.canvas.width,
-            y: 1 - e.clientY / this.canvas.height,
-            prevX: e.clientX / this.canvas.width,
-            prevY: 1 - e.clientY / this.canvas.height,
-            hue: this.hueOffset + this.pointers.size * 60
+            x: x,
+            y: y,
+            prevX: x,
+            prevY: y,
+            hue: this.hueOffset + this.pointers.size * 60,
+            color: color  // Store sampled color for this pointer
         };
         this.pointers.set(e.pointerId, pointer);
-
-        // Create fading burst splat on initial touch
-        const brightness = this.fluid.config.touchSplatBrightness;
-        const color = this.getColorForPointer(pointer.hue);
-        const dimColor = { r: color.r * brightness, g: color.g * brightness, b: color.b * brightness };
 
         // Add burst as a fading splat
         const burstForce = this.fluid.config.touchSplatPush * 3;
@@ -513,7 +529,7 @@ class App {
             y: pointer.y,
             dx: 0,
             dy: 0,
-            color: dimColor,
+            color: pointer.color,
             elapsed: 0,
             isBurst: true,
             burstForce: burstForce
@@ -542,10 +558,16 @@ class App {
             const dy = (targetY - pointer.prevY) * this.fluid.config.splatForce / steps;
 
             if (Math.abs(dx) > 0.0001 || Math.abs(dy) > 0.0001) {
-                const brightness = this.fluid.config.touchSplatBrightness;
-                const color = this.getColorForPointer(pointer.hue);
-                const dimColor = { r: color.r * brightness, g: color.g * brightness, b: color.b * brightness };
-                this.fluid.splat(x, y, dx, dy, dimColor);
+                let color;
+                if (this.isMobile) {
+                    // Use the color sampled at touch start
+                    color = pointer.color;
+                } else {
+                    const brightness = this.fluid.config.touchSplatBrightness;
+                    const paletteColor = this.getColorForPointer(pointer.hue);
+                    color = { r: paletteColor.r * brightness, g: paletteColor.g * brightness, b: paletteColor.b * brightness };
+                }
+                this.fluid.splat(x, y, dx, dy, color);
                 if (i === steps) {
                     this.applyTouchPush(x, y, 0.3);
                 }
